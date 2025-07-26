@@ -3,113 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Список товаров</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-        }
-
-        h2 {
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 70%;
-            margin: 20px auto;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            border: 1px solid #aaa;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #eee;
-        }
-
-        .empty-message {
-            text-align: center;
-            color: #555;
-            margin-top: 20px;
-        }
-    </style>
 </head>
 <body>
-
 <h2>Список товаров</h2>
-
-<table id="productTable">
+<table border="1">
     <thead>
     <tr>
         <th>Название</th>
         <th>Цвет</th>
-        <th>Штук</th>
+        <th>Количество</th>
     </tr>
     </thead>
-    <tbody id="tableBody">
-    <!-- Сюда будут добавлены строки с товарами -->
-    </tbody>
+    <tbody id="productTableBody"></tbody>
 </table>
 
-<div id="emptyMessage" class="empty-message" style="display: none;">Товары не найдены</div>
-
 <script>
-    // Загружаем товары с сервера
-    async function loadProducts() {
-        try {
-            // Запрашиваем список товаров через fetch
-            const response = await fetch('/api/products');
+    // Дождемся полной загрузки страницы
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('api/products')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки данных');
+                }
+                return response.json();
+            })
+            .then(products => {
+                const tbody = document.getElementById('productTableBody');
 
-            // Проверка успешности запроса
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
+                // Очистим таблицу перед вставкой новых строк
+                tbody.innerHTML = '';
 
-            // Получаем JSON (массив объектов)
-            const products = await response.json();
+                products.forEach(p => {
+                    const row = document.createElement('tr');
 
-            const tableBody = document.getElementById('tableBody');
-            const emptyMessage = document.getElementById('emptyMessage');
+                    row.innerHTML = `
+                        <td>${p.name}</td>
+                        <td>${p.color}</td>
+                        <td>${p.quantity}</td>
+                    `;
 
-            // Очищаем таблицу перед новой загрузкой
-            tableBody.innerHTML = '';
-
-            if (products.length === 0) {
-                // Показываем сообщение, если список пуст
-                emptyMessage.style.display = 'block';
-                return;
-            } else {
-                emptyMessage.style.display = 'none';
-            }
-
-            // Создаём строки таблицы
-            products.forEach(product => {
-                const row = document.createElement('tr');
-
-                // Создаём ячейки с данными товара
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.color}</td>
-                    <td>${product.quantity}</td>
-                `;
-
-                tableBody.appendChild(row);
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка при получении товаров:', error);
             });
-
-        } catch (error) {
-            // Выводим ошибку в консоль, если она есть
-            console.error('Ошибка при получении данных:', error);
-        }
-    }
-
-    // При полной загрузке страницы запускаем загрузку товаров
-    window.onload = loadProducts;
+    });
 </script>
-
 </body>
 </html>
