@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список товаров</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 70%;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #aaa;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #555;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Список товаров</h2>
+
+<table id="productTable">
+    <thead>
+    <tr>
+        <th>Название</th>
+        <th>Цвет</th>
+        <th>Штук</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+    <!-- Сюда будут добавлены строки с товарами -->
+    </tbody>
+</table>
+
+<div id="emptyMessage" class="empty-message" style="display: none;">Товары не найдены</div>
+
+<script>
+    // Загружаем товары с сервера
+    async function loadProducts() {
+        try {
+            // Запрашиваем список товаров через fetch
+            const response = await fetch('/api/products');
+
+            // Проверка успешности запроса
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
+            // Получаем JSON (массив объектов)
+            const products = await response.json();
+
+            const tableBody = document.getElementById('tableBody');
+            const emptyMessage = document.getElementById('emptyMessage');
+
+            // Очищаем таблицу перед новой загрузкой
+            tableBody.innerHTML = '';
+
+            if (products.length === 0) {
+                // Показываем сообщение, если список пуст
+                emptyMessage.style.display = 'block';
+                return;
+            } else {
+                emptyMessage.style.display = 'none';
+            }
+
+            // Создаём строки таблицы
+            products.forEach(product => {
+                const row = document.createElement('tr');
+
+                // Создаём ячейки с данными товара
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.color}</td>
+                    <td>${product.quantity}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+        } catch (error) {
+            // Выводим ошибку в консоль, если она есть
+            console.error('Ошибка при получении данных:', error);
+        }
+    }
+
+    // При полной загрузке страницы запускаем загрузку товаров
+    window.onload = loadProducts;
+</script>
+
+</body>
+</html>
